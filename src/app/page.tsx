@@ -1,4 +1,4 @@
-
+import PausePlay from "./components/pausePlay";
 import Song from "./components/song";
 export default function Home() {
 
@@ -9,7 +9,7 @@ export default function Home() {
 
         <h1 className="text-3xl">hello</h1>
         <Song />
-        </>
+</>
   );
 
 }
