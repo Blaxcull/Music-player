@@ -1,6 +1,5 @@
 // nextButton.tsx
 type NextButtonProps = {
-  index: number;
   onClick: () => void;
 };
 
