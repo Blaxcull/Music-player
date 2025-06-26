@@ -8,6 +8,11 @@ import Volume from './volume';
 import SongProgressBar from './songProgressBar';
 
 const Song = () => {
+
+const [shuffleOrder, setShuffleOrder] = useState<number[]>([]);
+
+
+const [shuffle,setShuffle] = useState(false)
   const [volume, setVolume] = useState(1); // Volume state is here
   const [songCurrentTime, setSongCurrentTime] = useState(0); // Volume state is here
 
@@ -39,37 +44,31 @@ const Song = () => {
 const handleNext = () => {
   if (currentIndex === null || files.length === 0) return;
 
- const nextIndex = currentIndex + 1;
-  console.log("hello")
+  // Find the position of the current index in the shuffleOrder
+  const positionInOrder = shuffleOrder.indexOf(currentIndex);
+  const nextPosition = positionInOrder + 1;
 
+  console.log("hello");
 
-  if(loop == 2){
-
-      console.log(loop)
-      setLoop(1)
-
-      console.log(loop)
-      console.log(loop)
+  if (loop === 2) {
+    console.log("Loop was 2");
+    setLoop(1); // this is async, so `console.log(loop)` will still show 2
+    console.log("Setting loop to 1");
   }
 
-
-  // If there’s a next song
-  if (nextIndex < files.length) {
-      console.log(loop)
-
-    handlePlay( nextIndex, files[nextIndex]);
+  // If there's a next item in shuffleOrder
+  if (nextPosition < shuffleOrder.length) {
+    const nextIndex = shuffleOrder[nextPosition];
+    handlePlay(nextIndex, files[nextIndex]);
   } else {
     console.log("Reached end of playlist");
-    
-    if(loop ==1){
 
-        handlePlay(0, files[0]);
+    if (loop === 1) {
+      const firstIndex = shuffleOrder[0];
+      handlePlay(firstIndex, files[firstIndex]);
     }
-
-
   }
 };
-
 
 
 
@@ -77,12 +76,15 @@ const handleNext = () => {
 const handlePrev = () => {
   if (currentIndex === null || files.length === 0) return;
 
-  const prevIndex = currentIndex -1;
+  const positionInOrder = shuffleOrder.indexOf(currentIndex);
+  const prevPosition= positionInOrder-1;
 
   // If there’s a next song
-  if (prevIndex <files.length) {
-    handlePlay( prevIndex, files[prevIndex]);
+  if (prevPosition< shuffleOrder.length) {
+    const prevIndex = shuffleOrder[prevPosition];
+    handlePlay(prevIndex, files[prevIndex]);
   } else {
+    console.log("Reached end of playlist");
 
     console.log("no index found");
     // Optionally loop: handlePlay(0, files[0]);
@@ -237,11 +239,6 @@ if(audioRef.current?.ended){
     }
 
 }
-const [shuffleOrder, setShuffleOrder] = useState<number[]>([]);
-const [currentShuffleIndex, setCurrentShuffleIndex] = useState(0);
-
-
-const [shuffle,setShuffle] = useState(false)
 
 const handleShuffle =()=>{
     setShuffle(!shuffle)
@@ -266,17 +263,30 @@ useEffect(() => {
     const index = order.indexOf(currentIndex); // use 'order' instead of 'shuffleOrder'
     if (index !== -1) {
       const removed = order.splice(index, 1)[0];
-      order.push(removed); // move currentIndex to the end
+      order.unshift(removed); // move currentIndex to the end
     }
 
     setShuffleOrder(order); // now set the modified order
     console.log(currentIndex);
+
+
+
+
+  }
+  else{
+
+    const order= Array.from({ length: files.length }, (_, i) => i);
+
+    setShuffleOrder(order); // now set the modified order
+    console.log(currentIndex);
+
   }
 }, [shuffle, files]);
 
 
 
 
+console.log(currentIndex)
 console.log(shuffleOrder)
 
   // Render song list, control buttons
@@ -331,6 +341,7 @@ console.log(shuffleOrder)
 <button
         className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
         onClick={handleShuffle}
+         disabled={!audioRef.current}
       >
       shuffle
       </button>
