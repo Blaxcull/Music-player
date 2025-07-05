@@ -9,30 +9,27 @@ songCurrentTime: (s: number) => void;
 
 
 const SongProgressBar = ({audioRef,songCurrentTime}:SongProgressBarProps) => {
+    const [songTime, setSongTime] = useState<number>(0);
 
-const [songTime, setSongTime] = useState<number>(0);
+
+const [isDragging, setIsDragging] = useState(false);
+const [dragTime, setDragTime] = useState<number>(0);
 
 const duration = audioRef.current?audioRef.current?.duration:0
 
 
 
-
 useEffect(() => {
-    const audio = audioRef?.current;
-     
-    if (!audio) return;
+  const audio = audioRef.current;
+  if (!audio) return;
 
-    const handleTimeUpdate = () => {
-      setSongTime(audio.currentTime);
-    };
+  const onTime = () => {
+    if (!isDragging) setSongTime(audio.currentTime);
+  };
 
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-    };
-  }, [audioRef.current]);
-
+  audio.addEventListener("timeupdate", onTime);
+  return () => audio.removeEventListener("timeupdate", onTime);
+}, [audioRef.current, isDragging]);
 
 function formatTime(timeInSeconds: number): string {
   const minutes = Math.floor(timeInSeconds / 60);
@@ -45,16 +42,37 @@ function formatTime(timeInSeconds: number): string {
       <>
     <div>{formatTime(songTime)}</div>
 
-
-      <input
-      type="range"
-      min="0"
-      max={isNaN(duration) ? 100 : duration}
-      step="1"
-        value={songTime}
-        onChange={(e) => songCurrentTime(parseFloat(e.target.value))}
-      />
-    <div>{formatTime(duration?duration:0)}</div>
+<input
+  type="range"
+  min="0"
+  max={isNaN(duration) ? 100 : duration}
+  step="1"
+  value={isDragging ? dragTime : songTime}
+  onMouseDown={() => {
+    setIsDragging(true);
+    setDragTime(songTime);         
+  }}
+  onTouchStart={() => {
+    setIsDragging(true);
+    setDragTime(songTime);
+  }}
+  onChange={e => {
+    const v = parseFloat(e.target.value);
+    setDragTime(v);            
+    setSongTime(v);                
+  }}
+  onMouseUp={e => {
+    const v = parseFloat((e.target as HTMLInputElement).value);
+    setIsDragging(false);
+    songCurrentTime(v);             
+  }}
+  onTouchEnd={e => {
+    const v = parseFloat((e.target as HTMLInputElement).value);
+    setIsDragging(false);
+    songCurrentTime(v);
+  }}
+/>
+<div>{formatTime(duration?duration:0)}</div>
     </>
   )
 }
