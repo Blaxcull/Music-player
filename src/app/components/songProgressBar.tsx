@@ -7,7 +7,6 @@ songCurrentTime: (s: number) => void;
 
 
 
-
 const SongProgressBar = ({audioRef,songCurrentTime}:SongProgressBarProps) => {
     const [songTime, setSongTime] = useState<number>(0);
 

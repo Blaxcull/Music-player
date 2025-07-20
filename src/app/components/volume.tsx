@@ -3,6 +3,7 @@ type VolumeProps = {
   setVolume: (v: number) => void;
 };
 
+
 const Volume= ({ volume, setVolume }: VolumeProps) => {
   return (
     <div>

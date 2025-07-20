@@ -1,6 +1,9 @@
 type PrevButtonProps = {
   onClick: () => void;
+
 };
+
+
 
 const PrevButton= ({ onClick }: PrevButtonProps) => {
 

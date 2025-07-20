@@ -1,4 +1,3 @@
-import PausePlay from "./components/pausePlay";
 import Song from "./components/song";
 export default function Home() {
 
