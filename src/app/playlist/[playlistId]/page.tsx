@@ -1,4 +1,7 @@
-'use client';
+"use client";
+
+import { useEffect, useState,use,useRef } from "react";
+
 import { usePlayer } from '@/context/PlayerContext';
 import PausePlayButton from '@/app/components/pausePlay';
 import NextButton from '@/app/components/nextButton';
@@ -7,11 +10,16 @@ import Volume from '@/app/components/volume';
 import SongProgressBar from '@/app/components/songProgressBar';
 import AddToLiked from '@/app/components/addToLiked';
 import Link from 'next/link';
-import { useEffect, useState, useRef } from 'react';
 import NewPlaylist from '@/app/components/newPlaylist'
 
 
-const Liked = () => {
+   
+export default function PlaylistDetails({ params }: { params: Promise<{ playlistId: string }> }) {
+  // unwrap the promise
+  const { playlistId } = use(params);
+
+
+
   const {
     files,
     setFiles,
@@ -32,27 +40,52 @@ const Liked = () => {
     audioRef,
   } = usePlayer();
 
-
 const contextRef = useRef<HTMLDivElement | null>(null);
 
-  const [likedIndices, setLikedIndices] = useState<number[]>([]);
+  const [playlistIndices, setPlaylistIndices] = useState<number[]>([]);
 
-  const [likedSongs,setLikedSongs] = useState([])
+  const [playlistSongs, setplaylistSongs] = useState([])
 
   const [show,setShow] = useState(false)
-
-
-  // Fetch liked indices
   useEffect(() => {
-    const userId = 1;
-    fetch(`/api/liked?userId=${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.likedSongIds) setLikedIndices(data.likedSongIds);
-      })
-      .catch((err) => console.error('Failed to fetch liked songs:', err));
-  }, []);
+    const fetchPlaylist = async () => {
+      try {
+        const res = await fetch("/api/getPlaylist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: 1, playlistId }),
+        });
+        const data = await res.json();
 
+        if (data.playlistIndices) setPlaylistIndices(data.playlistIndices);
+
+        console.log("API response:", data.playlistIndices);
+      } catch (error) {
+        console.error("Error fetching playlist:", error);
+      }
+    };
+    fetchPlaylist();
+  }, [playlistId]);
+
+
+
+useEffect(() => {
+  fetch('/api/getMusic')
+    .then((res) => res.json())
+    .then((data) => {
+    setplaylistSongs(playlistIndices.map(i => data.files[i]).reverse());
+    })
+    .catch((err) => console.error('Failed to fetch songs:', err));
+}, [playlistIndices]);
+
+const handleClick = (index: number) => {
+  setFiles(playlistSongs, `/playlist/${playlistId}`); // tell context these are from liked
+  handlePlay(index, playlistSongs[index]);
+};
+
+console.log(playlistIndices)
+
+const path = window.location.pathname
 
 const [contextIndex,setContextIndex] = useState(0)
 
@@ -66,57 +99,17 @@ setContextIndex(index)
 
 
 
+
 console.log('right')
 
 
 };
 
-useEffect(() => {
-  function handleClickOutside(event: MouseEvent) {
-    if (contextRef.current && !contextRef.current.contains(event.target as Node)) {
-      setShow(false); // hide context menu
-    }
-  }
-
-  document.addEventListener('mousedown', handleClickOutside);
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, []);
-
-
-
-useEffect(() => {
-  fetch('/api/getMusic')
-    .then((res) => res.json())
-    .then((data) => {
-    setLikedSongs(likedIndices.map(i => data.files[i]).reverse());
-    })
-    .catch((err) => console.error('Failed to fetch songs:', err));
-}, [likedIndices]);
-
-
-console.log(likedIndices)
-const handleClick = (index: number) => {
-  setFiles(likedSongs, '/liked'); // tell context these are from liked
-  handlePlay(index, likedSongs[index]);
-};
-console.log(likedSongs)
-
-
-const path = window.location.pathname
-
-
-const removeLiked = (index:number)=>{
-
-    console.log(likedIndices)
-const newLiked = likedIndices.filter(i => i !== index);
-    setLikedIndices(newLiked)
-    console.log(likedIndices)
-
-}
 
 console.log(path)
+
+
+
   return (
     <>
     {show && (
@@ -127,8 +120,8 @@ console.log(path)
       <div className="p-4">
         <h2 className="text-xl font-bold mb-2">Liked Songs</h2>
         <ul className="list-disc pl-5">
-          {likedSongs.map((file, index) => (
-            <li key={likedIndices[index]} className="flex items-center gap-4">
+          {playlistSongs.map((file, index) => (
+            <li key={playlistIndices[index]} className="flex items-center gap-4">
               <button
                 onClick={() => {handleClick(index)
 
@@ -144,12 +137,12 @@ console.log(path)
               </button>
 
               <div
-              onContextMenu={(e)=>{handleRightClick(e,likedIndices[index])}}
+              onContextMenu={(e)=>{handleRightClick(e,index)}}
               >
 
               {file}
               </div>
-<AddToLiked index={likedIndices[likedIndices.length-1 -index]} removeLiked={removeLiked} />
+<AddToLiked index={playlistIndices[playlistIndices.length-1 -index]} />
 
             </li>
           ))}
@@ -190,7 +183,5 @@ console.log(path)
       </Link>
     </>
   );
-};
-
-export default Liked;
+}
 

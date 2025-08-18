@@ -1,5 +1,5 @@
 const PausePlayButton = ({ onClick, isPlaying }: { onClick: () => void; isPlaying: boolean }) => {
-return (
+  return (
     <div className="fixed bottom-4 left-1/2 -translate-x-1/2 transform">
       <button
         onClick={onClick}

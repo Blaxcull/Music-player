@@ -3,8 +3,14 @@
 import React, { createContext, useContext, useRef, useState, useEffect } from 'react';
 
 type PlayerContextType = {
+  allPlaylist: string[];
+  addPlaylist: (name: string) => void;
+
+
+
   files: string[];
-  setFiles: (files: string[]) => void;
+  setFiles: (files: string[], source: string) => void;
+
   currentIndex: number;
   setCurrentIndex: (index: number) => void;
   playingIndex: number | null;
@@ -17,12 +23,13 @@ type PlayerContextType = {
   volume: number;
   handleVolumeChange: (val: number) => void;
   handleTimeChange: (val: number) => void;
-  isSongPlaying: (index: number) => boolean;
+  isSongPlaying: (index: number, getCurrPath : string) => boolean;
   loop: number;
   handleLoop: () => void;
   shuffle: boolean;
   handleShuffle: () => void;
   shuffleOrder: number[];
+  songName : string[];
 };
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -36,14 +43,34 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
   const [volume, setVolume] = useState(1);
   const [shuffle, setShuffle] = useState(false);
   const [shuffleOrder, setShuffleOrder] = useState<number[]>([]);
+  const [currentFile, setCurrentFile] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [loop, setLoop] = useState(0);
-const loopRef = useRef(loop);
-useEffect(() => {
-  loopRef.current = loop;
-}, [loop]);
+  const loopRef = useRef(loop);
+
+
+  const [songName,setSongName] = useState<string[]>([])
+
+  // Tracks the current page (`/` or `/liked`)
+  const [playlistSource, setPlaylistSource] = useState<string>('/');
+
+  // Wrapper for setFiles with source tracking
+  const setFilesWithSource = (files: string[], source: string) => {
+    setFiles(files);
+    setPlaylistSource(source);
+  };
+
+  useEffect(()=>{
+
+
+      setSongName(files[currentIndex])
+  })
+  // Keep loopRef in sync
+  useEffect(() => {
+    loopRef.current = loop;
+  }, [loop]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -57,14 +84,28 @@ useEffect(() => {
     }
   };
 
+
 const handlePlay = (index: number, file: string) => {
+  // Toggle only if same index AND same file
+if (
+  playingIndex === index &&
+  currentFile === file
+) {
+  if (audioRef.current?.paused) {
+    audioRef.current.play();
+  } else {
+    audioRef.current?.pause();
+  }
+  return;
+}
+
+  // Stop current audio
   if (audioRef.current) {
     audioRef.current.pause();
     audioRef.current.onended = null;
-    audioRef.current.src = '';
-    audioRef.current = null;
   }
 
+  // Create and play new audio
   const newAudio = new Audio(`/music/${file}`);
   newAudio.volume = volume;
 
@@ -72,53 +113,44 @@ const handlePlay = (index: number, file: string) => {
     setIsAudioPlaying(true);
     setIsPlaying(true);
   };
-
   newAudio.onpause = () => {
     setIsAudioPlaying(false);
     setIsPlaying(false);
   };
 
-  // ✅ Predict the next index and pass it directly
+  newAudio.onended = () => {
+    const currentLoop = loopRef.current;
+    const position = shuffleOrder.indexOf(index);
+    const nextPosition = position + 1;
 
-newAudio.onended = () => {
-  const currentLoop = loopRef.current;
-  const position = shuffleOrder.indexOf(index);
-  const nextPosition = position + 1;
+    if (currentLoop === 2) {
+      handlePlay(index, file);
+    } else if (currentLoop === 1 && nextPosition >= shuffleOrder.length) {
+      handlePlay(shuffleOrder[0], files[shuffleOrder[0]]);
+    } else if (nextPosition < shuffleOrder.length) {
+      handlePlay(shuffleOrder[nextPosition], files[shuffleOrder[nextPosition]]);
+    }
+  };
 
-  console.log('Song ended, loop:', currentLoop, 'pos:', position, 'next:', nextPosition);
-
-  if (currentLoop === 2) {
-    // 🔁 Repeat current song
-    handlePlay(index, file);
-  } else if (currentLoop === 1 && nextPosition >= shuffleOrder.length) {
-    // 🔁 Loop back to first
-    const firstIndex = shuffleOrder[0];
-    handlePlay(firstIndex, files[firstIndex]);
-  } else if (nextPosition < shuffleOrder.length) {
-    // ⏭ Go to next song
-    const nextIndex = shuffleOrder[nextPosition];
-    handlePlay(nextIndex, files[nextIndex]);
-  } else {
-    console.log("End of playlist reached and no loop active.");
-  }
-};
-
-
-  newAudio.play();
   audioRef.current = newAudio;
-
-  setCurrentIndex(index);
   setPlayingIndex(index);
+  setCurrentIndex(index);
+  setCurrentFile(file);
+  newAudio.play();
 };
+
 
   const handleNext = () => {
     if (files.length === 0) return;
-     if (loopRef.current === 2) {
-    setLoop(1);         // downgrade loop mode
-    loopRef.current = 1; // keep ref in sync immediately
-  }
+
+    if (loopRef.current === 2) {
+      setLoop(1);
+      loopRef.current = 1;
+    }
+
     const position = shuffleOrder.indexOf(currentIndex);
     const nextPosition = position + 1;
+
     if (nextPosition < shuffleOrder.length) {
       const nextIndex = shuffleOrder[nextPosition];
       handlePlay(nextIndex, files[nextIndex]);
@@ -129,14 +161,15 @@ newAudio.onended = () => {
   };
 
   const handlePrev = () => {
+    if (loopRef.current === 2) {
+      setLoop(1);
+      loopRef.current = 1;
+    }
 
-     if (loopRef.current === 2) {
-    setLoop(1);         // downgrade loop mode
-    loopRef.current = 1; // keep ref in sync immediately
-     }
     if (files.length === 0) return;
     const position = shuffleOrder.indexOf(currentIndex);
     const prevPosition = position - 1;
+
     if (prevPosition >= 0) {
       const prevIndex = shuffleOrder[prevPosition];
       handlePlay(prevIndex, files[prevIndex]);
@@ -156,17 +189,25 @@ newAudio.onended = () => {
     }
   };
 
-const isSongPlaying = (index: number): boolean => {
-  return (
-    playingIndex === index &&
-    !!audioRef.current &&
-    !audioRef.current.paused &&
-    isAudioPlaying
-  );
-};
+
+  const isSongPlaying = (index: number, getCurrPath: string):boolean=> {
+      
+      console.log(getCurrPath)
+      console.log(playlistSource)
+
+    return (
+
+        
+    playlistSource === getCurrPath&&
+      playingIndex === index &&
+     !! audioRef?.current &&
+      !audioRef?.current?.paused &&
+      isAudioPlaying
+    );
+  };
 
   const handleLoop = () => {
-    setLoop(prev => (prev < 2 ? prev + 1 : 0));
+    setLoop((prev) => (prev < 2 ? prev + 1 : 0));
   };
 
   const handleShuffle = () => {
@@ -196,11 +237,21 @@ const isSongPlaying = (index: number): boolean => {
     }
   }, [shuffle, files]);
 
+
+
+
+   const [allPlaylist, setAllPlaylist] = useState<string[]>([]);
+
+  const addPlaylist = (name: string) => {
+    setAllPlaylist((prev) => [...prev, name]);
+  };
+
+
   return (
     <PlayerContext.Provider
       value={{
         files,
-        setFiles,
+        setFiles: setFilesWithSource,
         currentIndex,
         setCurrentIndex,
         playingIndex,
@@ -219,6 +270,11 @@ const isSongPlaying = (index: number): boolean => {
         shuffle,
         handleShuffle,
         shuffleOrder,
+        songName,
+
+
+        allPlaylist,
+        addPlaylist,
       }}
     >
       {children}
