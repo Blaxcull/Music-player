@@ -1,43 +1,20 @@
 'use client';
 import { usePlayer } from '@/context/PlayerContext';
-import PausePlayButton from '@/app/components/pausePlay';
-import NextButton from '@/app/components/nextButton';
-import PrevButton from '@/app/components/prevButton';
-import Volume from '@/app/components/volume';
-import SongProgressBar from '@/app/components/songProgressBar';
 import AddToLiked from '@/app/components/addToLiked';
-import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
-import NewPlaylist from '@/app/components/newPlaylist'
+import NewPlaylist from '@/app/components/newPlaylist';
+import { usePathname } from 'next/navigation';
 
 
 const Liked = () => {
-  const {
-    files,
-    setFiles,
-    isSongPlaying,
-    handlePlay,
-    togglePlay,
-    isPlaying,
-    currentIndex,
-    handleNext,
-    songName,
-    handlePrev,
-    volume,
-    handleVolumeChange,
-    handleTimeChange,
-    handleLoop,
-    loop,
-    handleShuffle,
-    audioRef,
-  } = usePlayer();
+  const { setFiles, isSongPlaying, handlePlay } = usePlayer();
 
 
 const contextRef = useRef<HTMLDivElement | null>(null);
 
   const [likedIndices, setLikedIndices] = useState<number[]>([]);
 
-  const [likedSongs,setLikedSongs] = useState([])
+  const [likedSongs,setLikedSongs] = useState<string[]>([])
 
   const [show,setShow] = useState(false)
 
@@ -56,7 +33,7 @@ const contextRef = useRef<HTMLDivElement | null>(null);
 
 const [contextIndex,setContextIndex] = useState(0)
 
-const handleRightClick= (e:MouseEvent,index: number) => {
+const handleRightClick= (e:React.MouseEvent, index: number) => {
     e.preventDefault()
     setShow(true)
 
@@ -104,7 +81,7 @@ const handleClick = (index: number) => {
 console.log(likedSongs)
 
 
-const path = window.location.pathname
+const pathname = usePathname();
 
 
 const removeLiked = (index:number)=>{
@@ -116,79 +93,67 @@ const newLiked = likedIndices.filter(i => i !== index);
 
 }
 
-console.log(path)
   return (
-    <>
-    {show && (
-        <div ref={contextRef} style={{ position: 'absolute', top: 100, left: 100, zIndex: 9999 }}>
-        <NewPlaylist show={show} index={contextIndex} />
+    <div className="space-y-6">
+      {/* Context Menu */}
+      {show && (
+        <div
+          ref={contextRef}
+          className="absolute top-40 left-40 z-50 bg-gray-800 shadow-xl rounded-xl p-4 border border-gray-700"
+        >
+          <NewPlaylist show={show} index={contextIndex} onClose={() => setShow(false)} />
         </div>
-    )}
-      <div className="p-4">
-        <h2 className="text-xl font-bold mb-2">Liked Songs</h2>
-        <ul className="list-disc pl-5">
+      )}
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-100">Liked Songs</h2>
+          <p className="text-gray-400 mt-1">Your favorites collection</p>
+        </div>
+        <div className="text-sm text-gray-500">{likedSongs.length} tracks</div>
+      </div>
+
+      {/* List */}
+      <div className="bg-gray-900/50 border border-gray-800 rounded-xl overflow-hidden">
+        <div className="divide-y divide-gray-800">
           {likedSongs.map((file, index) => (
-            <li key={likedIndices[index]} className="flex items-center gap-4">
-              <button
-                onClick={() => {handleClick(index)
-
-              console.log(index)
-  console.log(file)
-
-                }}
-                className="cursor-pointer px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            <div key={likedIndices[index]} className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors">
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <button
+                  onClick={() => handleClick(index)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105 ${
+                    isSongPlaying(index, pathname)
+                      ? 'bg-green-600 hover:bg-green-700 text-white'
+                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                  }`}
                 >
-                {isSongPlaying(index,path) ? '|||' : 'play'}
- 
-                
-              </button>
+                  {isSongPlaying(index, pathname) ? (
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  )}
+                </button>
 
-              <div
-              onContextMenu={(e)=>{handleRightClick(e,likedIndices[index])}}
-              >
-
-              {file}
+                <div
+                  onDoubleClick={() => handleClick(index)}
+                  onContextMenu={(e)=>{handleRightClick(e,likedIndices[index])}}
+                  className="flex-1 min-w-0 cursor-pointer"
+                >
+                  <div className="text-sm font-medium text-gray-100 truncate">{file.replace('.mp3','')}</div>
+                  <div className="text-xs text-gray-400">Track</div>
+                </div>
               </div>
-<AddToLiked index={likedIndices[likedIndices.length-1 -index]} removeLiked={removeLiked} />
-
-            </li>
+              <AddToLiked index={likedIndices[likedIndices.length-1 -index]} removeLiked={removeLiked} />
+            </div>
           ))}
-        </ul>
-      </div>
-
-        <div className="p-4 text-green-600 font-semibold">
-          Now playing: {songName}
         </div>
-
-      <PausePlayButton onClick={togglePlay} isPlaying={isPlaying} />
-      <NextButton onClick={handleNext} />
-      <PrevButton onClick={handlePrev} />
-      <Volume volume={volume} setVolume={handleVolumeChange} />
-      <SongProgressBar audioRef={audioRef} songCurrentTime={handleTimeChange} />
-
-      <div className="fixed bottom-4 right-[70%] -translate-x-[70%]">
-        <button
-          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          onClick={handleLoop}
-        >
-          {loop} loop
-        </button>
       </div>
-
-      <div className="fixed bottom-4 left-[70%] translate-x-[70%]">
-        <button
-          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-          onClick={handleShuffle}
-          disabled={!audioRef.current}
-        >
-          shuffle
-        </button>
-      </div>
-
-      <Link href="/" className="text-blue-600 underline mt-4 block">
-        Go back to All Songs
-      </Link>
-    </>
+    </div>
   );
 };
 

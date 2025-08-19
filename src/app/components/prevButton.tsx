@@ -1,24 +1,20 @@
 type PrevButtonProps = {
   onClick: () => void;
-
 };
 
-
-
-const PrevButton= ({ onClick }: PrevButtonProps) => {
-
+const PrevButton = ({ onClick }: PrevButtonProps) => {
   return (
-<div className="fixed bottom-4 right-1/2 -translate-x-[70%]">
-<button
-        onClick={onClick}
-        className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-      >
-prev
-      </button>
-    </div>
+    <button
+      onClick={onClick}
+      className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white flex items-center justify-center transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+      aria-label="Previous track"
+    >
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+      </svg>
+    </button>
   );
 };
 
 export default PrevButton;
-
 
