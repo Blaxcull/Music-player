@@ -107,6 +107,10 @@ export const PlayerProvider = ({ children }: { children: React.ReactNode }) => {
     shuffleOrderRef.current = shuffleOrder;
   }, [shuffleOrder]);
 
+
+
+
+
 useEffect(() => {
   if (!files.length || currentIndex < 0 || currentIndex >= files.length) return;
 
@@ -117,10 +121,16 @@ useEffect(() => {
   }
 
   const file = files[currentIndex];
-  audio.src = `/music/${file}`;
+  audio.src = file;
   audio.volume = volume;
   setCurrentFile(file);
+
+// fetch the file name by the file url
+
   setSongName(file);
+
+
+
   setPlayingIndex(currentIndex); 
   setIsPlaying(true);
   setIsAudioPlaying(true);
@@ -248,8 +258,6 @@ const playAudio = async () => {
   };
 
   const isSongPlaying = (index: number, getCurrPath: string): boolean => {
-      console.log(playlistSource)
-      console.log(getCurrPath)
     return (
       playlistSource === getCurrPath &&
       playingIndex === index &&

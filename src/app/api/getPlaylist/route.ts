@@ -1,25 +1,73 @@
 import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request){
+interface Song {
+  _id: string;
+  title: string;
+  artist: string;
+  duration: number;
+  songURL: string;
+  coverArt: string;
+  uploadedAt: string;
+  liked: number;
+  playlist: string[];
+}
 
-  const {userId, playlistId} = await req.json(); // index is the song ID or index
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("userId");
+  const playlistName = searchParams.get("playlistName");
 
-
-  if (!userId || playlistId=== undefined) {
-    return NextResponse.json({ error: "Missing userId or index" }, { status: 400 });
+  if (!userId || !playlistName) {
+    return NextResponse.json({ 
+      error: "Missing userId or playlistName" 
+    }, { status: 400 });
   }
 
-  const client = await clientPromise
-  const db =  client.db('music')
+  try {
+    const client = await clientPromise;
+    const db = client.db("music");
 
+    console.log(`Fetching playlist: ${playlistName} for user: ${userId}`);
 
-const findResult = await db.collection("users").findOne(
-  { _id: userId },                          // 1
-  { projection: { [`fields.${playlistId}`]: 1, _id: 0 } }  // 2
-);
-const playlistArray = findResult?.fields?.[playlistId] || [];
+    // Get user with songs that have this playlist name in their playlists array
+    const user = await db.collection("users").findOne(
+      { _id: parseInt(userId) },
+      { projection: { songs: 1 } }
+    );
 
-return NextResponse.json({ success: true, playlistIndices: playlistArray });
+    if (!user || !user.songs) {
+      return NextResponse.json({
+        success: true,
+        playlist: {
+          name: playlistName,
+          songs: [],
+          songCount: 0
+        }
+      });
+    }
+
+    // Filter songs that have this playlist name in their playlists array
+    const playlistSongs = (user.songs as Song[]).filter((song: Song) => 
+      song.playlist && song.playlist.includes(playlistName)
+    );
+
+    console.log(`Found ${playlistSongs.length} songs in playlist:`, playlistSongs);
+
+    return NextResponse.json({
+      success: true,
+      playlist: {
+        name: playlistName,
+        songs: playlistSongs,
+        songCount: playlistSongs.length
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching playlist:", error);
+    return NextResponse.json({ 
+      error: "Failed to fetch playlist" 
+    }, { status: 500 });
+  }
 }
 

@@ -1,42 +1,72 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
+  /* Professional dark theme colors matching the image */
   --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #1a1a1a;
-  --card-foreground: #fafafa;
-  --popover: #1a1a1a;
-  --popover-foreground: #fafafa;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #374151;
-  --secondary-foreground: #f9fafb;
-  --muted: #374151;
-  --muted-foreground: #9ca3af;
-  --accent: #374151;
-  --accent-foreground: #f9fafb;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #374151;
-  --input: #374151;
-  --ring: #3b82f6;
-  --radius: 0.75rem;
+  --background-secondary: #111111;
+  --background-tertiary: #1a1a1a;
+  --background-card: #181818;
+  --background-card-hover: #282828;
+  --foreground: #ffffff;
+  --foreground-secondary: #b3b3b3;
+  --foreground-tertiary: #727272;
+  
+  /* Vibrant accent colors for active states and highlights */
+  --primary: #1db954;
+  --primary-light: #1ed760;
+  --primary-dark: #1aa34a;
+  --accent-purple: #8b5cf6;
+  --accent-pink: #ec4899;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-orange: #f59e0b;
+  
+  /* Card and surface colors */
+  --card: #181818;
+  --card-hover: #282828;
+  --card-border: #333333;
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 16px 48px rgba(0, 0, 0, 0.6);
+  
+  /* Text colors */
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-tertiary: #727272;
+  --text-muted: #4d4d4d;
+  
+  /* Interactive elements */
+  --interactive: #1db954;
+  --interactive-hover: #1ed760;
+  --interactive-active: #1aa34a;
+  
+  /* Status colors */
+  --success: #1db954;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
 }
 
-/* Hide scrollbar for Chrome, Safari, Edge */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
-/* Hide scrollbar for Firefox */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Remove all focus outlines */
+*:focus {
+  outline: none !important;
 }
 
-/* Custom scrollbar */
+*:focus-visible {
+  outline: none !important;
+}
+
+/* Custom scrollbar matching the image's sleek design */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -44,15 +74,16 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
+  background: #535353;
   border-radius: 3px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #727272;
 }
 
-/* Custom range input styling */
+/* Custom range input styling for progress bars and volume */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -61,7 +92,7 @@ input[type="range"] {
 }
 
 input[type="range"]::-webkit-slider-track {
-  background: #374151;
+  background: #4d4d4d;
   height: 4px;
   border-radius: 2px;
 }
@@ -69,105 +100,320 @@ input[type="range"]::-webkit-slider-track {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  background: #3b82f6;
-  height: 16px;
-  width: 16px;
+  background: #ffffff;
+  height: 12px;
+  width: 12px;
   border-radius: 50%;
-  border: 2px solid #1e40af;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  background: #60a5fa;
+  background: #f0f0f0;
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
+/* Firefox range input */
 input[type="range"]::-moz-range-track {
-  background: #374151;
+  background: #4d4d4d;
   height: 4px;
   border-radius: 2px;
   border: none;
 }
 
 input[type="range"]::-moz-range-thumb {
-  background: #3b82f6;
-  height: 16px;
-  width: 16px;
+  background: #ffffff;
+  height: 12px;
+  width: 12px;
   border-radius: 50%;
-  border: 2px solid #1e40af;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 input[type="range"]::-moz-range-thumb:hover {
-  background: #60a5fa;
+  background: #f0f0f0;
   transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --font-sans: var(--font-inter);
+/* Enhanced animations matching the image's smooth feel */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(29, 185, 84, 0.6);
+  }
 }
 
-/* Focus styles */
-*:focus { outline: none !important; }
-*:focus-visible { outline: none !important; }
-
-/* Remove all outlines from interactive elements */
-button:focus,
-button:focus-visible,
-input:focus,
-input:focus-visible,
-textarea:focus,
-textarea:focus-visible,
-select:focus,
-select:focus-visible,
-a:focus,
-a:focus-visible,
-[tabindex]:focus,
-[tabindex]:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* Remove ring styles from Tailwind focus states */
-.focus\:ring-0:focus,
+/* Remove Tailwind ring focus styles */
 .focus\:ring-2:focus,
 .focus\:ring-4:focus,
-.focus\:ring-blue-500:focus,
-.focus\:ring-offset-2:focus {
-  --tw-ring-opacity: 0 !important;
+.focus\:ring:focus,
+.focus\:ring-offset-2:focus,
+.focus\:ring-offset:focus {
   box-shadow: none !important;
+}
+
+/* Utility classes for the music player aesthetic */
+.music-card {
+  background-color: #181818;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.music-card:hover {
+  background-color: #282828;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.album-art {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #ffffff, #d1d5db);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gradient-text-green {
+  background: linear-gradient(to right, #4ade80, #16a34a);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glass-effect {
+  background-color: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Button styles matching the image */
+.btn-primary {
+  background-color: #1db954;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+.btn-secondary {
+  background-color: #282828;
+  color: white;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #383838;
+  transform: scale(1.05);
+}
+
+.btn-secondary:active {
+  transform: scale(0.95);
+}
+
+.btn-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  transform: scale(1.05);
+  background-color: #282828;
+}
+
+/* Progress bar styling */
+.progress-bar {
+  background-color: #4d4d4d;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background-color: #1db954;
+  height: 100%;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+/* Table styling for song lists */
+.song-table {
+  width: 100%;
+}
+
+.song-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.song-row:hover {
+  background-color: #282828;
+}
+
+/* Status indicators */
+.status-active {
+  color: #1db954;
+}
+
+.status-inactive {
+  color: #727272;
+}
+
+/* Verified badge styling */
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  background-color: #1db954;
+  border-radius: 50%;
+}
+
+.verified-badge svg {
+  width: 0.625rem;
+  height: 0.625rem;
+  color: white;
+}
+
+/* Animation classes */
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+/* Dialog isolation to prevent layout shifts */
+.context-menu-dialog {
+  position: fixed !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  will-change: transform !important;
+  isolation: isolate !important;
+  contain: layout style paint !important;
+}
+
+/* Prevent any layout shifts when dialog appears */
+.context-menu-dialog * {
+  contain: layout style paint !important;
+}
+
+/* Prevent layout shifts for fixed dialogs */
+.fixed-dialog {
+  position: fixed !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+}
+
+/* Ensure body doesn't shift when dialogs appear */
+body {
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Custom scrollbar utility classes for song lists */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 12px;
+}
+
+.scrollbar-thumb-custom::-webkit-scrollbar-thumb {
+  background-color: #404040;
+  border-radius: 6px;
+  border: 2px solid #282828;
+}
+
+.scrollbar-track-custom::-webkit-scrollbar-track {
+  background-color: #282828;
+  border-radius: 6px;
+}
+
+.scrollbar-thumb-custom:hover::-webkit-scrollbar-thumb {
+  background-color: #555555;
+}
+
+/* Ensure scrollbar is always visible when content overflows */
+.overflow-y-auto {
+  overflow-y: auto !important;
 }

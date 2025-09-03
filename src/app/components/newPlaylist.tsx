@@ -4,150 +4,215 @@ import { usePlaylist } from "@/context/playlistContext";
 
 type NewPlaylistProps = {
   show: boolean
-  index: number
+  songFileName: string // Changed from index to actual filename
   onClose?: () => void
+  position?: { x: number; y: number }
+  anchor?: 'top' | 'bottom'
 }
 
-const NewPlaylist = ({ show, index, onClose }: NewPlaylistProps) => {
-  const { allPlaylist, addPlaylist, refreshPlaylists } = usePlaylist();
-  const [fieldName, setFieldName] = useState('')
-  const [playlistSet, setPlaylistSet] = useState<string[]>([])
+const NewPlaylist = ({ show, songFileName, onClose, position, anchor = 'top' }: NewPlaylistProps) => {
+  const [playlistName, setPlaylistName] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [allPlaylist, setAllPlaylist] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const { refreshPlaylists } = usePlaylist();
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFieldName(event.target.value);
-  };
-  
   useEffect(() => {
-    const userId = 1;
-    fetch(`/api/addPlaylist?userId=${userId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        const keys = Object.keys(data).filter((key) => key !== "_id");
-        setPlaylistSet(keys);
-      })
-      .catch((err) => console.error("Failed to fetch playlists:", err));
+    const fetchPlaylists = async () => {
+      try {
+        const res = await fetch(`/api/fetchPlaylists?userId=${1}`);
+        const data = await res.json();
+        setAllPlaylist(data.playlists || []);
+      } catch (error) {
+        console.error("Failed to fetch playlists:", error);
+      }
+    };
+
+    fetchPlaylists();
   }, []);
 
-  useEffect(() => {
-    const unique = new Set(playlistSet);
-    unique.forEach((key) => {
-      if (key !== 'error') {
-        addPlaylist(key);  
-      }
-    });
-  }, [playlistSet, addPlaylist]);
+  // Filter playlists based on search query
+  const filteredPlaylists = allPlaylist.filter(playlist =>
+    playlist.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleClickPlaylist = async (playlistName: string) => {
     try {
-      const res = await fetch('/api/addPlaylist', {
-        method: 'POST',
+      setIsLoading(true);
+      setMessage("");
+      
+      const res = await fetch("/api/addPlaylist", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: 1, index, fieldName: playlistName })
+        body: JSON.stringify({
+          userId: 1,
+          playlistName,
+          fileName: songFileName,
+        }),
       });
+
       const data = await res.json();
-      // Close the context menu after adding to playlist
-      onClose?.();
+      console.log("Add to playlist response:", data);
+      
+      if (data.success) {
+        setMessage(`Added to ${playlistName}!`);
+        refreshPlaylists();
+        setTimeout(() => {
+          onClose?.();
+        }, 1000);
+      } else {
+        setMessage(data.error || "Failed to add to playlist");
+      }
     } catch (error) {
       console.error("Error adding to playlist:", error);
+      setMessage("Error adding to playlist");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleEnter = async () => {
-    if (!fieldName.trim()) return;
-    
-    try {
-      const res = await fetch('/api/addPlaylist', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ userId: 1, index, fieldName })
-      });
-      const data = await res.json();
-      setFieldName('');
-      // Refresh playlists after creating a new one
-      refreshPlaylists();
-      // Close the context menu after creating playlist
-      onClose?.();
-    } catch (error) {
-      console.error("Error adding to playlist:", error);
-    }
-  }
+    if (playlistName.trim() === "") return;
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    try {
+      setIsLoading(true);
+      setMessage("");
+      
+      const res = await fetch("/api/addPlaylist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: 1,
+          playlistName: playlistName.trim(),
+          fileName: songFileName,
+        }),
+      });
+
+      const data = await res.json();
+      console.log("Create playlist response:", data);
+      
+      if (data.success) {
+        setMessage(`Created ${playlistName.trim()} and added song!`);
+        setPlaylistName("");
+        refreshPlaylists();
+        // Auto-close after success
+        setTimeout(() => {
+          onClose?.();
+        }, 1000);
+      } else {
+        setMessage(data.error || "Failed to create playlist");
+      }
+    } catch (error) {
+      console.error("Error creating playlist:", error);
+      setMessage("Error creating playlist");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      addPlaylist(fieldName);
+      e.preventDefault();
       handleEnter();
     }
-  }
+  };
 
   if (!show) return null;
 
   return (
-    <div className="rounded-xl w-80 max-w-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-sm font-semibold text-gray-100">Add to Playlist</h3>
-        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-      </div>
+    <div className="bg-[#181818] border border-[#333333] rounded-lg shadow-xl p-3 w-64">
+      <div className="space-y-3">
+        {/* Simple Header */}
+        <div className="text-center">
+          <h3 className="text-sm font-medium text-white">Add to Playlist</h3>
+        </div>
 
-      {/* Search Input */}
-      <div className="mb-5">
-        <input
-          className="w-full px-3 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-sm text-gray-100 placeholder-gray-400 focus:outline-none"
-          type="text"
-          value={fieldName}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Search playlists..."
-          autoFocus
-        />
-      </div>
-
-      {/* Playlist List */}
-      <div className="max-h-72 overflow-y-auto pr-1">
-        {allPlaylist.length === 0 ? (
-          <div className="text-center py-4">
-            <div className="text-gray-400 text-sm">No playlists found</div>
-            <div className="text-gray-500 text-xs mt-1">Create a new playlist to get started</div>
+        {/* Message Display */}
+        {message && (
+          <div className={`text-xs text-center p-2 rounded ${
+            message.includes("Added") || message.includes("Created") 
+              ? "bg-[#1db954]/20 text-[#1db954]" 
+              : "bg-[#ef4444]/20 text-[#ef4444]"
+          }`}>
+            {message}
           </div>
-        ) : (
-          <ul className="space-y-1">
-            {allPlaylist.map((playlist, idx) => (
-              <li key={idx}>
-                <button 
-                  onClick={() => handleClickPlaylist(playlist)}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-800 hover:text-gray-100 transition-colors flex items-center gap-3"
-                >
-                  <div className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                  <span className="truncate">{playlist}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
         )}
-      </div>
 
-      {/* Create New Playlist */}
-      {fieldName.trim() && !allPlaylist.includes(fieldName) && (
-        <div className="mt-3 pt-3 border-t border-gray-700">
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="Search playlists..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-2 py-1.5 bg-[#282828] border border-[#333333] rounded text-white placeholder-[#727272] focus:border-[#1db954] text-xs"
+        />
+
+        {/* Playlist List */}
+        <div className="max-h-24 overflow-y-auto space-y-1">
+          {filteredPlaylists.length === 0 ? (
+            <div className="text-center py-2 text-[#727272]">
+              <p className="text-xs">
+                {searchQuery ? `No playlists matching "${searchQuery}"` : "No playlists"}
+              </p>
+            </div>
+          ) : (
+            filteredPlaylists.map((playlist) => (
+              <button
+                key={playlist}
+                onClick={() => handleClickPlaylist(playlist)}
+                disabled={isLoading}
+                className="w-full flex items-center gap-2 p-1.5 text-left bg-[#282828] hover:bg-[#383838] rounded text-xs text-[#b3b3b3] hover:text-white transition-colors disabled:opacity-50"
+              >
+                <div className="w-3 h-3 bg-[#1db954]/20 rounded flex items-center justify-center">
+                  <svg className="w-2 h-2 text-[#1db954]" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                  </svg>
+                </div>
+                <span className="truncate flex-1">{playlist}</span>
+                {isLoading && (
+                  <div className="w-2.5 h-2.5 border border-[#1db954] border-t-transparent rounded-full animate-spin"></div>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+
+        {/* Quick Create */}
+        <div className="flex gap-1">
+          <input
+            type="text"
+            placeholder="New playlist..."
+            value={playlistName}
+            onChange={(e) => setPlaylistName(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1 px-2 py-1.5 bg-[#282828] border border-[#333333] rounded text-white placeholder-[#727272] focus:border-[#1db954] text-xs"
+          />
           <button
             onClick={handleEnter}
-            className="w-full px-3 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+            disabled={playlistName.trim() === "" || isLoading}
+            className="px-2 py-1.5 bg-[#1db954] hover:bg-[#1ed760] text-white rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Create "{fieldName}"
+            {isLoading ? (
+              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "+"
+            )}
           </button>
         </div>
-      )}
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="w-full py-1.5 px-2 bg-[#282828] hover:bg-[#383838] text-[#b3b3b3] hover:text-white rounded text-xs border border-[#333333] hover:border-[#4d4d4d]"
+        >
+          Close
+        </button>
+      </div>
     </div>
   );
 };

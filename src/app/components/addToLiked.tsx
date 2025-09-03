@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 
 type AddToLikedProps = {
-  index: number;
-  removeLiked?: (index: number) => void;
+  file: string
+    removeLiked?: (file: string) => void;
 };
 
-const AddToLiked = ({ index, removeLiked }: AddToLikedProps) => {
-  const [symbol, setSymbol] = useState("+");
+const AddToLiked = ({ file,removeLiked}: AddToLikedProps) => {
+  const [symbol, setSymbol] = useState("-");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLikedStatus = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/liked?userId=1`);
-        const data = await res.json();
 
-        if (data.likedSongIds.includes(index)) {
-          setSymbol("-");
+      const res = await fetch(`/api/liked?userId=${1}&file=${encodeURIComponent(file)}`);
+       const data = await res.json();
+       console.log(data)
+
+        if (data.liked==0) {
+            setSymbol("+");
+
         } else {
-          setSymbol("+");
+            setSymbol("-");
         }
       } catch (error) {
         console.error("Error checking liked status:", error);
@@ -29,7 +32,7 @@ const AddToLiked = ({ index, removeLiked }: AddToLikedProps) => {
     };
 
     fetchLikedStatus();
-  }, [index]);
+  }, [file]);
 
   const handleClick = async () => {
     try {
@@ -38,18 +41,23 @@ const AddToLiked = ({ index, removeLiked }: AddToLikedProps) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId: 1, index, symbol }),
+        body: JSON.stringify({ userId: 1, file, symbol }),
       });
 
-      const data = await res.json();
-      const likedSongIds =
-        data.updatedIndices?.likedSongIds || data.likedSongIds || [];
-
-      if (likedSongIds.includes(index)) {
-        setSymbol("-");
-      } else {
+       const data = await res.json();
+      console.log(data)
+      if (data.liked==0) {
         setSymbol("+");
-        if (removeLiked) removeLiked(index);
+        if (removeLiked) removeLiked(file); 
+      } else {
+        setSymbol("-");
+      }
+      const refreshRes = await fetch(`/api/liked?userId=${1}&file=${encodeURIComponent(file)}`);
+      const refreshData = await refreshRes.json();
+      if (refreshData.liked==0) {
+        setSymbol("+");
+      } else {
+        setSymbol("-");
       }
     } catch (error) {
       console.error("Error toggling liked state:", error);

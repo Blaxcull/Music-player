@@ -2,33 +2,41 @@ import clientPromise from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  const { userId, fieldName} = await req.json();
+  const { userId, playlistName } = await req.json();
 
-  if (!userId ||  fieldName=== undefined) {
-    return NextResponse.json(
-      { error: "Missing userId or playlistId" },
-      { status: 400 }
-    );
+  if (!userId || !playlistName) {
+    return NextResponse.json({ 
+      error: "Missing userId or playlistName" 
+    }, { status: 400 });
   }
 
-  const client = await clientPromise;
-  const db = client.db("music");
+  try {
+    const client = await clientPromise;
+    const db = client.db('music');
 
-  const updateResult = await db.collection("users").updateOne(
-    { _id: userId },
-    { $unset: { [`fields.${fieldName}`]: "" } } // 👈 remove this playlist
-  );
-
-  if (updateResult.modifiedCount === 0) {
-    return NextResponse.json(
-      { error: "Playlist not found or already deleted" },
-      { status: 404 }
+    // Remove this playlist name from all songs' playlists arrays
+    const result = await db.collection("songs").updateMany(
+      { userId: Number(userId) },
+      { $pull: { playlists: playlistName } }
     );
-  }
 
-  return NextResponse.json({
-    success: true,
-    message: `Playlist ${fieldName} deleted for user ${userId}`,
-  });
+    // Also remove from user's fields for backward compatibility
+    await db.collection("users").updateOne(
+      { _id: Number(userId) },
+      { $unset: { [`fields.${playlistName}`]: "" } }
+    );
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `Playlist deleted: ${playlistName}`,
+      songsUpdated: result.modifiedCount
+    });
+
+  } catch (error) {
+    console.error("Error deleting playlist:", error);
+    return NextResponse.json({ 
+      error: "Failed to delete playlist" 
+    }, { status: 500 });
+  }
 }
 

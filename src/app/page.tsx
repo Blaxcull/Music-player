@@ -2,58 +2,46 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="space-y-8">
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Link 
-          href="/allSongs" 
-          className="group p-6 bg-gray-900/50 hover:bg-gray-900 border border-gray-800 rounded-xl transition-all duration-200 hover:border-gray-700 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-              <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#1db954]/20 via-[#1ed760]/20 to-[#1aa34a]/20 rounded-3xl"></div>
+        <div className="relative bg-[#181818] backdrop-blur-xl border border-[#333333] rounded-3xl p-12 text-center">
+          <div className="max-w-4xl mx-auto space-y-8">
+            <div className="space-y-4">
+              <h1 className="text-6xl font-bold gradient-text leading-tight">
+                Welcome to Harmony
+              </h1>
+              <p className="text-xl text-[#b3b3b3] max-w-2xl mx-auto leading-relaxed">
+                Experience your music like never before with our premium music player. 
+                Discover, organize, and enjoy your favorite tracks with stunning visuals and intuitive controls.
+              </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-100 group-hover:text-white transition-colors">All Songs</h3>
-              <p className="text-sm text-gray-400">Browse your complete music library</p>
-            </div>
-          </div>
-        </Link>
-
-        <Link 
-          href="/liked" 
-          className="group p-6 bg-gray-900/50 hover:bg-gray-900 border border-gray-800 rounded-xl transition-all duration-200 hover:border-gray-700 hover:shadow-lg"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
-              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-100 group-hover:text-white transition-colors">Liked Songs</h3>
-              <p className="text-sm text-gray-400">Your favorite tracks collection</p>
-            </div>
-          </div>
-        </Link>
-
-        <div className="group p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-100">Playlists</h3>
-              <p className="text-sm text-gray-400">Create and manage playlists</p>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link 
+                href="/allSongs" 
+                className="btn-primary group relative overflow-hidden"
+              >
+                <span className="relative z-10">Browse All Songs</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#1ed760] to-[#1aa34a] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Link>
+              <Link 
+                href="/liked" 
+                className="btn-secondary group"
+              >
+                <span className="flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  Liked Songs
+                </span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
+
     </div>
   );
 }

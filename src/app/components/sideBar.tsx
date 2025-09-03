@@ -7,141 +7,129 @@ const SideBar = () => {
   const [showPlaylist, setShowPlaylist] = useState(false);
   const { allPlaylist, isLoading, refreshPlaylists } = usePlaylist();
 
+  const handleClickPlaylist = async (playlistName: string) => {
+    try {
+      const res = await fetch("/api/deletePlaylist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: 1, playlistName }),
+      });
 
-
-
-const handleClickPlaylist = async (playlistName: string) => {
-  try {
-    const res = await fetch("/api/deletePlaylist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userId: 1, fieldName: playlistName }),
-    });
-
-    const data = await res.json();
-    console.log("Delete response:", data);
-    refreshPlaylists();
-  } catch (error) {
-    console.error("Error deleting playlist:", error);
-  }
-};
-
-
-
-
+      const data = await res.json();
+      console.log("Delete response:", data);
+      
+      if (data.success) {
+        refreshPlaylists();
+      } else {
+        console.error("Failed to delete playlist:", data.error);
+      }
+    } catch (error) {
+      console.error("Error deleting playlist:", error);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="p-6 border-b border-gray-800">
+    <div className="flex flex-col h-full bg-[#000000] border-r border-[#333333]">
+      {/* Header */}
+      <div className="p-6 border-b border-[#333333]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">F</span>
+          <div className="w-10 h-10 bg-gradient-to-br from-[#1db954] to-[#1ed760] rounded-xl flex items-center justify-center">
+            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-100">Music Player</h1>
+            <h1 className="text-xl font-bold text-white">Harmony</h1>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
+        {/* Library Links */}
         <div className="space-y-1">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-            Library
-          </h2>
+          <h2 className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-4">Library</h2>
           
-          <Link 
-            href="/" 
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
-            </svg>
+          <Link href="/" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#b3b3b3] rounded-lg hover:bg-[#282828] hover:text-white transition-all duration-200 group">
+            <div className="w-5 h-5 bg-[#282828] rounded-lg flex items-center justify-center group-hover:bg-[#1db954] transition-all duration-200">
+              <svg className="w-3 h-3 text-[#b3b3b3] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+              </svg>
+            </div>
             Home
           </Link>
-          
-          <Link 
-            href="/allSongs" 
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
+
+          <Link href="/allSongs" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#b3b3b3] rounded-lg hover:bg-[#282828] hover:text-white transition-all duration-200 group">
+            <div className="w-5 h-5 bg-[#282828] rounded-lg flex items-center justify-center group-hover:bg-[#1db954] transition-all duration-200">
+              <svg className="w-3 h-3 text-[#b3b3b3] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+              </svg>
+            </div>
             All Songs
           </Link>
-          
-          <Link 
-            href="/liked" 
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-gray-100 transition-colors"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
+
+          <Link href="/liked" className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#b3b3b3] rounded-lg hover:bg-[#282828] hover:text-white transition-all duration-200 group">
+            <div className="w-5 h-5 bg-[#282828] rounded-lg flex items-center justify-center group-hover:bg-[#1db954] transition-all duration-200">
+              <svg className="w-3 h-3 text-[#b3b3b3] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </div>
             Liked Songs
           </Link>
         </div>
 
+        {/* Playlists Section */}
         <div className="space-y-1 pt-6">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-            Playlists
-          </h2>
-          
-          <button
-            onClick={() => setShowPlaylist(!showPlaylist)}
-            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-gray-100 transition-colors w-full"
+          <h2 className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-4">Playlists</h2>
+          <button 
+            onClick={() => setShowPlaylist(!showPlaylist)} 
+            className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-[#b3b3b3] rounded-lg hover:bg-[#282828] hover:text-white transition-all duration-200 w-full group"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
+            <div className="w-5 h-5 bg-[#282828] rounded-lg flex items-center justify-center group-hover:bg-[#1db954] transition-all duration-200">
+              <svg className="w-3 h-3 text-[#b3b3b3] group-hover:text-white transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+              </svg>
+            </div>
             My Playlists
             <svg 
-              className={`w-4 h-4 ml-auto transition-transform ${showPlaylist ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
+              className={`w-4 h-4 ml-auto transition-transform duration-200 ${showPlaylist ? 'rotate-180' : ''}`} 
+              fill="currentColor" 
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path d="M7 10l5 5 5-5z"/>
             </svg>
           </button>
-
+          
           {showPlaylist && (
-            <div className="ml-6 mt-2">
+            <div className="ml-6 mt-2 space-y-1">
               {isLoading ? (
-                <div className="px-3 py-2 text-sm text-gray-500 italic">Loading playlists...</div>
+                <div className="px-3 py-2 text-sm text-[#727272] italic flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-[#727272] border-t-[#1db954] rounded-full animate-spin"></div>
+                  Loading playlists...
+                </div>
               ) : allPlaylist.length === 0 ? (
-                <div className="px-3 py-2 text-sm text-gray-500 italic">No playlists yet</div>
+                <div className="px-3 py-2 text-sm text-[#727272] italic">No playlists yet</div>
               ) : (
-    <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
-      {allPlaylist.map((playlist) => (
-        <div
-          key={playlist}
-          className="flex items-center px-3 py-2 text-sm text-gray-400 rounded-md hover:bg-gray-800 transition-colors"
-        >
-          {/* Whole row except bin is wrapped in Link */}
-          <Link
-            href={`/playlist/${playlist}`}
-            className="flex-1 truncate hover:text-gray-200 cursor-pointer"
-          >
-            {playlist}
-          </Link>
-
-          <span
-            className="ml-2 text-red-400 hover:text-red-600 cursor-pointer"
-            onClick={(e) => {
-              e.preventDefault();   // 👈 prevent Link navigation
-              e.stopPropagation();  // 👈 prevent bubbling
- handleClickPlaylist(playlist)             
-            }}
-          >
-            bin
-          </span>
-        </div>
-      ))}
-    </div>
-
+                <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+                  {allPlaylist.map((playlist) => (
+                    <div key={playlist} className="flex items-center px-3 py-2 text-sm text-[#b3b3b3] rounded-lg hover:bg-[#282828] transition-all duration-200 group">
+                      <Link href={`/playlist/${playlist}`} className="flex-1 truncate hover:text-white cursor-pointer transition-colors duration-200">
+                        {playlist}
+                      </Link>
+                      <button 
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleClickPlaylist(playlist); }}
+                        className="ml-2 text-[#ef4444] hover:text-[#f87171] hover:bg-[#ef4444]/10 p-1 rounded transition-all duration-200 opacity-0 group-hover:opacity-100"
+                        title="Delete playlist"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -149,10 +137,10 @@ const handleClickPlaylist = async (playlistName: string) => {
       </nav>
 
       {/* Footer */}
-      <div className="p-6 border-t border-gray-800">
-        <div className="text-xs text-gray-500">
-          <p>© 2024 Harmony</p>
-          <p className="mt-1">Your music, your way</p>
+      <div className="p-6 border-t border-[#333333]">
+        <div className="text-center">
+          <p className="text-xs text-[#727272] mb-2">Made with ❤️</p>
+          <p className="text-xs text-[#4d4d4d]">Harmony Music Player</p>
         </div>
       </div>
     </div>
